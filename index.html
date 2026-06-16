@@ -391,7 +391,7 @@
       document.getElementById('valNTU').innerHTML    = ntu.toFixed(1) + '<span class="card-unit"> NTU</span>';
       document.getElementById('valIdx').innerHTML    = idx + '<span class="card-unit">/100</span>';
       document.getElementById('valStatus').innerHTML = `<span class="badge ${cls}">${label}</span>`;
-      document.getElement      const solusiEl = document.getElementById('valSolusi');
+      const solusiEl = document.getElementById('valSolusi');
       solusiEl.innerHTML = rekList.map((t, i) =>
         '<li style="padding:6px 0;' + (i < rekList.length-1 ? 'border-bottom:0.5px solid var(--border);' : '') + '">' + t + '</li>'
       ).join('');
