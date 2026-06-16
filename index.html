@@ -267,10 +267,10 @@
         fetch(`${BASE}/get?token=${TOKEN}&v2`),
         fetch(`${BASE}/get?token=${TOKEN}&v3`)
       ]);
-      const ntu    = parseFloat(await r0.json());
-      const status = await r1.json();
-      const idx    = parseInt(await r2.json());
-      const solusi = await r3.json();
+      const ntu    = parseFloat(await r0.text());
+      const status = await r1.text();
+      const idx    = parseInt(await r2.text());
+      const solusi = await r3.text();
 
       const [label, cls] = statusInfo(ntu);
 
