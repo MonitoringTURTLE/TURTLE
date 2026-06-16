@@ -156,10 +156,10 @@
 
   <div class="section">
     <div class="section-title"><i class="ti ti-bulb" aria-hidden="true"></i> Rekomendasi tindakan</div>
-    <div class="solusi-box" id="valSolusi">Menunggu data dari sensor...</div>
+    <ul class="solusi-box" id="valSolusi" style="list-style:none;padding:0;margin:0;"><li>Menunggu data dari sensor...</li></ul>
   </div>
 
-  <footer>Data diperbarui otomatis tiap 5 detik · Powered by Blynk IoT</footer>
+  <footer>Data diperbarui otomatis tiap 2 detik · Powered by Blynk IoT</footer>
 
 </div>
 
@@ -236,7 +236,52 @@
     if (ntu < 50)   return ['CUKUP KOTOR',   'b-cukup'];
     if (ntu < 500)  return ['LUMAYAN KOTOR', 'b-lumayan'];
     if (ntu < 1000) return ['KOTOR',         'b-kotor'];
-    return ['SANGAT KOTOR', 'b-sangat'];
+    if (ntu < 3000) return ['SANGAT KOTOR',  'b-sangat'];
+    return ['SANGAT KOTOR',  'b-sangat'];
+  }
+
+  function rekomendasiTindakan(ntu) {
+    if (ntu < 10) return [
+      '✅ Air dalam kondisi bersih dan aman digunakan.',
+      'Tidak diperlukan tindakan khusus saat ini.',
+      'Lakukan pengecekan rutin setiap minggu untuk memastikan kualitas tetap terjaga.',
+      'Pastikan penutup toren dalam kondisi rapat agar tidak terkontaminasi debu atau serangga.'
+    ];
+    if (ntu < 50) return [
+      '🟡 Air mulai menunjukkan sedikit kekeruhan, namun masih dalam batas toleransi.',
+      'Hindari menggunakan air ini langsung untuk minum atau memasak tanpa dimasak terlebih dahulu.',
+      'Pertimbangkan untuk membersihkan toren dalam 1–2 minggu ke depan.',
+      'Periksa apakah ada kotoran atau lumut yang mulai tumbuh di dinding toren.'
+    ];
+    if (ntu < 500) return [
+      '🟠 Air cukup keruh dan tidak disarankan untuk konsumsi langsung.',
+      'Gunakan air ini hanya untuk keperluan non-konsumsi seperti menyiram tanaman atau mengepel.',
+      'Segera rencanakan pembersihan toren dalam waktu dekat.',
+      'Cek sumber air masuk — kemungkinan ada sedimen atau kontaminan dari pipa atau saluran masuk.'
+    ];
+    if (ntu < 1000) return [
+      '🔴 Air dalam kondisi kotor dan tidak layak pakai untuk aktivitas sehari-hari.',
+      'Hentikan penggunaan air dari toren ini untuk mandi, mencuci pakaian, maupun memasak.',
+      'Lakukan pembersihan toren secepatnya — kuras dan sikat seluruh bagian dalam toren.',
+      'Periksa kondisi filter dan pipa saluran masuk, ganti jika sudah tersumbat atau rusak.',
+      'Pertimbangkan penggunaan air cadangan (galon/PDAM langsung) sementara waktu.'
+    ];
+    if (ntu < 3000) return [
+      '🚨 DARURAT — Air sangat kotor dan berbahaya untuk semua jenis penggunaan domestik!',
+      'Segera hentikan seluruh penggunaan air dari toren ini.',
+      'Kuras toren secara menyeluruh, bersihkan lumpur dan endapan yang menempel di dasar dan dinding.',
+      'Disinfeksi toren menggunakan larutan klorin (1–2 sendok teh per 100 liter air) setelah dikuras.',
+      'Periksa dan ganti filter air jika ada, serta bersihkan seluruh jalur pipa.',
+      'Hubungi teknisi air atau jasa pembersihan toren profesional jika kondisi tidak membaik.'
+    ];
+    return [
+      '🚨 DARURAT — Air sangat kotor dan berbahaya untuk semua jenis penggunaan domestik!',
+      'Segera hentikan seluruh penggunaan air dari toren ini.',
+      'Kuras toren secara menyeluruh, bersihkan lumpur dan endapan yang menempel di dasar dan dinding.',
+      'Disinfeksi toren menggunakan larutan klorin (1–2 sendok teh per 100 liter air) setelah dikuras.',
+      'Periksa dan ganti filter air jika ada, serta bersihkan seluruh jalur pipa.',
+      'Hubungi teknisi air atau jasa pembersihan toren profesional jika kondisi tidak membaik.'
+    ];
   }
 
   // ── GAUGE CUSTOM (canvas 2D) ─────────────────────────────
@@ -331,24 +376,26 @@
   async function fetchData() {
     document.getElementById('lastUpdate').textContent = 'Memperbarui...';
     try {
-      const [r0, r1, r2, r3] = await Promise.all([
+      const [r0, r1, r2] = await Promise.all([
         fetch(`${BASE}/get?token=${TOKEN}&v0`),
         fetch(`${BASE}/get?token=${TOKEN}&v1`),
-        fetch(`${BASE}/get?token=${TOKEN}&v2`),
-        fetch(`${BASE}/get?token=${TOKEN}&v3`)
+        fetch(`${BASE}/get?token=${TOKEN}&v2`)
       ]);
       const ntu    = parseFloat(await r0.text());
       const status = await r1.text();
       const idx    = parseInt(await r2.text());
-      const solusi = await r3.text();
 
       const [label, cls] = statusInfo(ntu);
+      const rekList = rekomendasiTindakan(ntu);
 
       document.getElementById('valNTU').innerHTML    = ntu.toFixed(1) + '<span class="card-unit"> NTU</span>';
       document.getElementById('valIdx').innerHTML    = idx + '<span class="card-unit">/100</span>';
       document.getElementById('valStatus').innerHTML = `<span class="badge ${cls}">${label}</span>`;
-      document.getElementById('valSolusi').textContent = solusi;
-      document.getElementById('alertBox').style.display = ntu >= 2000 ? 'block' : 'none';
+      document.getElement      const solusiEl = document.getElementById('valSolusi');
+      solusiEl.innerHTML = rekList.map((t, i) =>
+        '<li style="padding:6px 0;' + (i < rekList.length-1 ? 'border-bottom:0.5px solid var(--border);' : '') + '">' + t + '</li>'
+      ).join('');
+      document.getElementById('alertBox').style.display = ntu >= 1000 ? 'block' : 'none';
 
       // Kirim notifikasi kalau NTU melebihi batas
       if (ntu >= BATAS_NOTIF) kirimNotif(ntu, label);
@@ -382,7 +429,7 @@
 
   cekStatusNotif();
   fetchData();
-  setInterval(fetchData, 5000);
+  setInterval(fetchData, 2000);
 </script>
 </body>
 </html>
